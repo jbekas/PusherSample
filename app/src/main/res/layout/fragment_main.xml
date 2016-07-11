@@ -38,6 +38,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="32dp"
+                android:maxLength="30"
+                android:maxLines="1"
+                android:imeOptions="actionDone"
+                android:inputType="textEmailAddress"
                 android:hint="Username"/>
 
             <Button

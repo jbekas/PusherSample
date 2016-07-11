@@ -11,10 +11,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.redgeckotech.pushersample.Constants;
@@ -28,6 +31,7 @@ import java.util.List;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import timber.log.Timber;
 
 public class MainActivity extends BaseActivity {
 
@@ -61,6 +65,21 @@ public class MainActivity extends BaseActivity {
                 }
             });
         }
+
+        userName.setOnEditorActionListener(new TextView.OnEditorActionListener(){
+            public boolean onEditorAction(TextView view, int actionId, KeyEvent event) {
+                Timber.d("onEditorAction: %d, %s", actionId, event);
+
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    onLoginClicked();
+                }
+                if (event.getAction() == KeyEvent.ACTION_UP && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    onLoginClicked();
+                }
+
+                return true;
+            }
+        });
     }
 
     @Override
@@ -120,13 +139,15 @@ public class MainActivity extends BaseActivity {
     @SuppressLint("CommitPrefEdits")
     @OnClick(R.id.login_button)
     public void onLoginClicked() {
+        hideKeyboard(this);
+
         if (userName.getText().length() > 0) {
             SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
             edit.putString(Constants.USERNAME, userName.getText().toString());
             edit.commit();
 
-            hideKeyboard(this);
-
+            userName.setText(null);
+            
             updateUI();
         } else {
             makeShortToast("Please enter your username.");
