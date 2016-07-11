@@ -1,12 +1,15 @@
 package com.redgeckotech.pushersample.util;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
+import android.support.annotation.NonNull;
 
 import com.redgeckotech.pushersample.BuildConfig;
+import com.redgeckotech.pushersample.MyApplication;
+import com.redgeckotech.pushersample.PusherService;
+import com.redgeckotech.pushersample.bus.RxBus;
 import com.redgeckotech.pushersample.model.Message;
 import com.redgeckotech.pushersample.net.PusherApi;
 
@@ -24,6 +27,10 @@ public class Utilities {
     private static PusherApi pusherApiInstance;
 
     private static HashMap<String, List<Message>> channelMessageLists;
+
+    private static PusherService pusherService;
+
+    private static RxBus rxBus;
 
     // Note: Use Dagger for service creation/injection
     public static com.pusher.client.Pusher getPusherInstance() {
@@ -85,5 +92,26 @@ public class Utilities {
         }
 
         return messageList;
+    }
+
+    public static PusherService getPusherService(@NonNull Context context) {
+
+        if (pusherService != null) {
+            return pusherService;
+        }
+
+        MyApplication myApplication = (MyApplication) context.getApplicationContext();
+
+        pusherService = new PusherService(myApplication);
+
+        return pusherService;
+    }
+
+    public static RxBus getRxBusInstance() {
+        if (rxBus == null) {
+            rxBus = new RxBus();
+        }
+
+        return rxBus;
     }
 }

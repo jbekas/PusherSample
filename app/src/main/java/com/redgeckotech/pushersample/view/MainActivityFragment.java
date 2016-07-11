@@ -11,6 +11,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.redgeckotech.pushersample.Constants;
+import com.redgeckotech.pushersample.MyApplication;
+import com.redgeckotech.pushersample.PusherService;
 import com.redgeckotech.pushersample.R;
 import com.redgeckotech.pushersample.util.Utilities;
 import com.redgeckotech.pushersample.view.adapter.ChannelAdapter;
@@ -51,10 +53,11 @@ public class MainActivityFragment extends Fragment implements ChannelAdapter.Cha
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         channelRecyclerView.setLayoutManager(llm);
 
-        channelList = new ArrayList<>();
-        channelList.add("Channel1");
-        channelList.add("Channel2");
-        channelList.add("Channel3");
+        PusherService pusherService = Utilities.getPusherService(getActivity());
+        channelList = pusherService.getSubscribedChannelList();
+//        channelList.add("Channel1");
+//        channelList.add("Channel2");
+//        channelList.add("Channel3");
 
         channelAdapter = new ChannelAdapter(this, channelList);
 

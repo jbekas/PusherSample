@@ -13,18 +13,16 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.pusher.client.Pusher;
-import com.pusher.client.channel.Channel;
-import com.pusher.client.channel.SubscriptionEventListener;
 import com.redgeckotech.pushersample.Constants;
-import com.redgeckotech.pushersample.view.adapter.MessageAdapter;
 import com.redgeckotech.pushersample.R;
+import com.redgeckotech.pushersample.bus.MessageReceived;
+import com.redgeckotech.pushersample.bus.RxBus;
 import com.redgeckotech.pushersample.model.Message;
 import com.redgeckotech.pushersample.net.Event;
 import com.redgeckotech.pushersample.net.MessageData;
 import com.redgeckotech.pushersample.net.PusherApi;
 import com.redgeckotech.pushersample.util.Utilities;
+import com.redgeckotech.pushersample.view.adapter.MessageAdapter;
 import com.redgeckotech.pushersample.widget.VerticalSpaceItemDecoration;
 
 import org.json.JSONObject;
@@ -38,6 +36,8 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import rx.Subscription;
+import rx.functions.Action1;
 import timber.log.Timber;
 
 public class ChannelActivityFragment extends BaseFragment {
@@ -45,8 +45,6 @@ public class ChannelActivityFragment extends BaseFragment {
     private static final int VERTICAL_ITEM_SPACE = 16;
 
     private String channelName;
-    private Pusher pusher;
-    private Channel channel;
 
     @Bind(R.id.send_image)
     ImageView sendImageView;
@@ -57,6 +55,8 @@ public class ChannelActivityFragment extends BaseFragment {
 
     private MessageAdapter messageAdapter;
     private List<Message> messageList;
+
+    private Subscription eventSubscription;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -76,7 +76,6 @@ public class ChannelActivityFragment extends BaseFragment {
 
         Timber.d("Channel name: %s", channelName);
 
-        pusher = Utilities.getPusherInstance();
     }
 
     @Override
@@ -107,41 +106,40 @@ public class ChannelActivityFragment extends BaseFragment {
         // Set the Activity title to the channel name
         setActivityTitle(channelName);
 
-        pusher.connect();
-        channel = pusher.subscribe(channelName);
+        RxBus rxBus = Utilities.getRxBusInstance();
 
-        channel.bind("my_event", new SubscriptionEventListener() {
-            @Override
-            public void onEvent(String channelName, String eventName, final String data) {
-                try {
-                    //System.out.println(data);
-                    Timber.d("channelName: %s", channelName);
-                    Timber.d("eventName: %s", eventName);
-                    Timber.d("data: %s", data);
+        eventSubscription = rxBus.toObserverable()
+                .subscribe(new Action1<Object>() {
+                    @Override
+                    public void call(Object event) {
 
-                    Message message = new Gson().fromJson(data, Message.class);
+                        Timber.d("event %s", event);
 
-                    messageList.add(message);
+                        if (event instanceof MessageReceived) {
+                            MessageReceived messageReceived = (MessageReceived) event;
 
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            messageAdapter.notifyDataSetChanged();
+                            // only refresh if incoming message is for the current channel.
+                            if (channelName.equals(((MessageReceived) event).getChannelName())) {
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        messageAdapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
                         }
-                    });
-                } catch (Exception e) {
-                    Timber.e(e, null);
-                }
-            }
-        });
+
+                    }
+                });
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        pusher.unsubscribe(channelName);
-        pusher.disconnect();
+        if (eventSubscription != null) {
+            eventSubscription.unsubscribe();
+        }
     }
 
     @OnClick(R.id.send_image)

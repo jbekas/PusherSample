@@ -10,7 +10,9 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.redgeckotech.pushersample.PusherService;
 import com.redgeckotech.pushersample.R;
+import com.redgeckotech.pushersample.util.Utilities;
 import com.redgeckotech.pushersample.view.adapter.ChannelAdapter;
 
 import java.util.List;
@@ -49,42 +51,15 @@ public class MainActivity extends BaseActivity {
     public void onResume() {
         super.onResume();
 
-//        Pusher pusher = PusherUtils.getPusherInstance();
-//        pusher.connect();
-//
-//        final Channel channel = pusher.subscribe("test_channel");
-//
-//        channel.bind("my_event", subscriptionEventListener);
+        PusherService pusherService = Utilities.getPusherService(this);
+        pusherService.start();
 
-//        channel.bind("my-event", new SubscriptionEventListener() {
-//            @Override
-//            public void onEvent(String channelName, String eventName, final String data) {
-//                System.out.println(data);
-//            }
-//        });
-
+        // TODO Add app kill-switch so pusher service is terminated on app stop
     }
-
-//    SubscriptionEventListener subscriptionEventListener = new SubscriptionEventListener() {
-//        @Override
-//        public void onEvent(String channelName, String eventName, final String data) {
-//            //System.out.println(data);
-//            Timber.d("channelName: %s", channelName);
-//            Timber.d("eventName: %s", eventName);
-//            Timber.d("data: %s", data);
-//        }
-//    };
 
     @Override
     public void onPause() {
         super.onPause();
-
-//        Pusher pusher = PusherUtils.getPusherInstance();
-//
-//        // Unsubscribe from channel
-//        pusher.unsubscribe("test_channel");
-//
-//        pusher.disconnect();
     }
 
     @Override
