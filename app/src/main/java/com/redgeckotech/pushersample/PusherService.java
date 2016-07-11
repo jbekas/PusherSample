@@ -57,6 +57,11 @@ public class PusherService {
         rxBus = Utilities.getRxBusInstance();
     }
 
+    /**
+     * Get a sorted list of subscribed channels.
+     *
+     * @return A sorted List of channel names.
+     */
     public List<String> getSubscribedChannelList() {
         Timber.d("getSubscribedChannelList");
         for (String key : subscribedChannelList.keySet()) {
@@ -67,6 +72,9 @@ public class PusherService {
         //return subscribedChannels;
     }
 
+    /**
+     * Start the connection to Pusher and subscribe to public channels.
+     */
     public void start() {
         if (pusher != null) {
             Timber.d("PusherService already started.");
@@ -87,6 +95,9 @@ public class PusherService {
         }
     }
 
+    /**
+     * Terminate the Pusher connection and clean up.
+     */
     public void stop() {
         Timber.d("Stopping PusherService");
 
@@ -101,6 +112,9 @@ public class PusherService {
         pusher = null;
     }
 
+    /**
+     * Start a timer to close connections to Pusher if the app is exited.
+     */
     public void startShutdownTimer() {
         Timber.d("Starting shutdown timer.");
         mShutdownTimer = new Timer();
@@ -113,6 +127,9 @@ public class PusherService {
         }, 2000);
     }
 
+    /**
+     * Cancel the shutdown timer.
+     */
     public void stopShutdownTimer() {
         if (mShutdownTimer != null) {
             Timber.d("Shutdown timer was canceled.");
@@ -121,6 +138,13 @@ public class PusherService {
         }
     }
 
+    /**
+     * Send a message to a private or presence channel.
+     *
+     * @param channelName The channel name.
+     * @param eventName The event name.
+     * @param data The stringified version of the JSON payload.
+     */
     public void sendMessage(String channelName, String eventName, String data) {
         Channel channel = subscribedChannelList.get(channelName);
         if (channel instanceof PrivateChannel) {
@@ -204,6 +228,9 @@ public class PusherService {
     //
     /////////////////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Used to notify a channel creator about channel creation success or failure.
+     */
     public interface ChannelCreatedListener {
         public void channelCreatedSuccess(String channelName);
         public void channelCreatedFailure(String channelName, Exception exception);
@@ -301,6 +328,5 @@ public class PusherService {
         } catch (Exception e) {
             Timber.e(e, null);
         }
-
     }
 }
