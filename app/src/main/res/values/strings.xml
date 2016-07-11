@@ -19,4 +19,5 @@
 
     <!-- Errors -->
     <string name="unknown_error">An unknown error occurred.</string>
+    <string name="new_messages_have_arrived">New messages have arrived.</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.redgeckotech.pushersample.view;
 
+import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -30,6 +31,8 @@ import com.redgeckotech.pushersample.widget.VerticalSpaceItemDecoration;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -54,11 +57,15 @@ public class ChannelActivityFragment extends BaseFragment {
     EditText messageView;
     @Bind(R.id.message_list)
     RecyclerView messageRecyclerView;
+    @Bind(R.id.notification_layout)
+    ViewGroup notificationLayout;
 
     private MessageAdapter messageAdapter;
     private List<Message> messageList;
 
     private Subscription eventSubscription;
+
+    private Timer hideNotificationTimer;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -112,6 +119,10 @@ public class ChannelActivityFragment extends BaseFragment {
 
         RxBus rxBus = Utilities.getRxBusInstance();
 
+        if (eventSubscription != null && !eventSubscription.isUnsubscribed()) {
+            eventSubscription.unsubscribe();
+        }
+
         eventSubscription = rxBus.toObserverable()
                 .subscribe(new Action1<Object>() {
                     @Override
@@ -130,9 +141,11 @@ public class ChannelActivityFragment extends BaseFragment {
                                         messageAdapter.notifyDataSetChanged();
                                     }
                                 });
+                            } else {
+                                showNotificationLayout();
+
                             }
                         }
-
                     }
                 });
     }
@@ -262,5 +275,45 @@ public class ChannelActivityFragment extends BaseFragment {
         sendImageView.setEnabled(true);
         sendImageView.setColorFilter(Utilities.getColor(getActivity(), R.color.colorAccent));
         messageView.setEnabled(true);
+    }
+
+    private void showNotificationLayout() {
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    notificationLayout.setTranslationY(-notificationLayout.getHeight());
+                    notificationLayout.setVisibility(View.VISIBLE);
+                    notificationLayout.animate()
+                            .translationY(0)
+                            .setDuration(300);
+                }
+            });
+        }
+
+        // Hide notification after 3s
+        hideNotificationTimer = new Timer();
+        hideNotificationTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                hideNotificationLayout();
+            }
+        }, 3000);
+    }
+
+    private void hideNotificationLayout() {
+        Activity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    notificationLayout.animate()
+                            .translationY(-notificationLayout.getHeight())
+                            .setDuration(300);
+                    notificationLayout.setVisibility(View.GONE);
+                }
+            });
+        }
     }
 }
