@@ -50,11 +50,6 @@ public class MainActivity extends BaseActivity {
     @Override
     public void onResume() {
         super.onResume();
-
-        PusherService pusherService = Utilities.getPusherService(this);
-        pusherService.start();
-
-        // TODO Add app kill-switch so pusher service is terminated on app stop
     }
 
     @Override

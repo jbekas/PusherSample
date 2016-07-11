@@ -39,7 +39,6 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
         v.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Timber.d("view clicked: %s", viewHolder.channelName.getText().toString());
                 channelClickListener.channelClicked(viewHolder.channelName.getText().toString());
             }
         });
@@ -53,7 +52,7 @@ public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelV
         holder.channelName.setText(channel);
 
         List<Message> messageList = Utilities.getChannelMessageList(channel);
-        // TODO get unread count / currently display total message count
+        // TODO get unread count; currently display total message count
         holder.unreadCount.setText(String.format(Locale.US, "%d", messageList.size()));
     }
 

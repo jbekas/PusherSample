@@ -14,6 +14,8 @@ import com.redgeckotech.pushersample.util.Utilities;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import timber.log.Timber;
 
@@ -26,6 +28,8 @@ public class PusherService {
     private HashMap<String, Channel> subscribedChannelList = new HashMap<>();
 
     private RxBus rxBus;
+
+    private Timer mShutdownTimer;
 
     public PusherService(Context context) {
         this.context = context;
@@ -73,13 +77,14 @@ public class PusherService {
         if (pusher != null) {
             pusher.disconnect();
         }
+
+        pusher = null;
     }
 
     private SubscriptionEventListener eventListener = new SubscriptionEventListener() {
         @Override
         public void onEvent(String channelName, String eventName, final String data) {
             try {
-                //System.out.println(data);
                 Timber.d("channelName: %s", channelName);
                 Timber.d("eventName: %s", eventName);
                 Timber.d("data: %s", data);
@@ -98,4 +103,24 @@ public class PusherService {
             }
         }
     };
+
+    public void startShutdownTimer() {
+        Timber.d("Starting shutdown timer.");
+        mShutdownTimer = new Timer();
+        mShutdownTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Timber.d("Shutdown timer is killing the Pusher connection.");
+                stop();
+            }
+        }, 2000);
+    }
+
+    public void stopShutdownTimer() {
+        if (mShutdownTimer != null) {
+            Timber.d("Shutdown timer was canceled.");
+            mShutdownTimer.cancel();
+            mShutdownTimer = null;
+        }
+    }
 }

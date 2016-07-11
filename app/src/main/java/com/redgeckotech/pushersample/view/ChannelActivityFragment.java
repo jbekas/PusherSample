@@ -146,6 +146,8 @@ public class ChannelActivityFragment extends BaseFragment {
     public void onSendImageClicked() {
         disableMessageUI();
 
+        Utilities.hideKeyboardFrom(getActivity(), messageView);
+
         String message = messageView.getText().toString();
 
         if (message.trim().length() == 0) {

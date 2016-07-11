@@ -1,10 +1,13 @@
 package com.redgeckotech.pushersample.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.ColorRes;
 import android.support.annotation.NonNull;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.redgeckotech.pushersample.BuildConfig;
 import com.redgeckotech.pushersample.MyApplication;
@@ -22,6 +25,10 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+/**
+ * Most of the static references in this class would be moved into Dagger components which
+ * could be injected where needed. This implementation is quick-and-dirty.
+ */
 public class Utilities {
     private static com.pusher.client.Pusher pusherInstance;
     private static PusherApi pusherApiInstance;
@@ -113,5 +120,10 @@ public class Utilities {
         }
 
         return rxBus;
+    }
+
+    public static void hideKeyboardFrom(Context context, View view) {
+        InputMethodManager imm = (InputMethodManager) context.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 }
