@@ -1,15 +1,23 @@
 package com.redgeckotech.pushersample.view;
 
+import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.text.TextUtilsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
+import com.redgeckotech.pushersample.Constants;
 import com.redgeckotech.pushersample.PusherService;
 import com.redgeckotech.pushersample.R;
 import com.redgeckotech.pushersample.util.Utilities;
@@ -18,13 +26,23 @@ import com.redgeckotech.pushersample.view.adapter.ChannelAdapter;
 import java.util.List;
 
 import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends BaseActivity {
+
+    @Bind(R.id.fab) FloatingActionButton fab;
+    @Bind(R.id.login_layout) ViewGroup loginLayout;
+    @Bind(R.id.username) TextView userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
+
+        ButterKnife.bind(this);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -43,18 +61,32 @@ public class MainActivity extends BaseActivity {
                 }
             });
         }
-
-
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        updateUI();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+    }
+
+    private void updateUI() {
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String username = prefs.getString(Constants.USERNAME, null);
+
+        if (TextUtils.isEmpty(username)) {
+            fab.setVisibility(View.GONE);
+            loginLayout.setVisibility(View.VISIBLE);
+        } else {
+            fab.setVisibility(View.VISIBLE);
+            loginLayout.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -72,10 +104,32 @@ public class MainActivity extends BaseActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_logout) {
+            SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            edit.remove(Constants.USERNAME);
+            edit.commit();
+
+            updateUI();
+
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressLint("CommitPrefEdits")
+    @OnClick(R.id.login_button)
+    public void onLoginClicked() {
+        if (userName.getText().length() > 0) {
+            SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            edit.putString(Constants.USERNAME, userName.getText().toString());
+            edit.commit();
+
+            hideKeyboard(this);
+
+            updateUI();
+        } else {
+            makeShortToast("Please enter your username.");
+        }
     }
 }

@@ -1,6 +1,8 @@
 package com.redgeckotech.pushersample.view;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -89,12 +91,14 @@ public class ChannelActivityFragment extends BaseFragment {
         messageRecyclerView.setLayoutManager(llm);
 
         messageList = Utilities.getChannelMessageList(channelName);
-        messageAdapter = new MessageAdapter(messageList);
+        messageAdapter = new MessageAdapter(getActivity(), messageList);
 
         messageRecyclerView.setAdapter(messageAdapter);
         messageRecyclerView.addItemDecoration(new VerticalSpaceItemDecoration(VERTICAL_ITEM_SPACE));
 
         setHasOptionsMenu(true);
+
+        Utilities.hideKeyboardFrom(getActivity(), messageView);
 
         return rootView;
     }
@@ -142,6 +146,12 @@ public class ChannelActivityFragment extends BaseFragment {
         }
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(Constants.EXTRA_CHANNEL_NAME, channelName);
+    }
+
     @OnClick(R.id.send_image)
     public void onSendImageClicked() {
         disableMessageUI();
@@ -156,8 +166,11 @@ public class ChannelActivityFragment extends BaseFragment {
             return;
         }
 
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String username = prefs.getString(Constants.USERNAME, null);
+
         MessageData messageData = new MessageData();
-        //messageData.setUserName("john");
+        messageData.setUserName(username);
         messageData.setMessage(message);
 
         Event event = new Event();

@@ -2,19 +2,57 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
                 tools:context=".view.MainActivityFragment"
                 tools:showIn="@layout/activity_main">
 
     <android.support.v7.widget.RecyclerView
+        android:id="@+id/channel_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/channel_list"
-        android:layout_alignParentTop="true"
         android:layout_above="@id/send_message_layout"
+        android:layout_alignParentTop="true"
+        android:padding="16dp"
         />
+
+    <RelativeLayout
+        android:id="@+id/login_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Enter your username"
+                android:textAppearance="?android:textAppearanceLarge"/>
+
+            <EditText
+                android:id="@+id/username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="32dp"
+                android:hint="Username"/>
+
+            <Button
+                android:id="@+id/login_button"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@color/colorAccent"
+                android:layout_marginLeft="32dp"
+                android:layout_marginRight="32dp"
+                android:text="Login"/>
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </RelativeLayout>

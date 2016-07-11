@@ -87,15 +87,12 @@ public class MainActivityFragment extends Fragment implements ChannelAdapter.Cha
                         Timber.d("event %s", event);
 
                         if (event instanceof MessageReceived) {
-                            getActivity().runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    channelAdapter.notifyDataSetChanged();
-                                }
-                            });
+                            updateUI();
                         }
                     }
                 });
+
+        updateUI();
     }
 
     @Override
@@ -105,5 +102,14 @@ public class MainActivityFragment extends Fragment implements ChannelAdapter.Cha
         if (eventSubscription != null) {
             eventSubscription.unsubscribe();
         }
+    }
+
+    private void updateUI() {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                channelAdapter.notifyDataSetChanged();
+            }
+        });
     }
 }
