@@ -19,16 +19,21 @@ import timber.log.Timber;
 public class ChannelAdapter extends RecyclerView.Adapter<ChannelAdapter.ChannelViewHolder> {
 
     ChannelClickListener channelClickListener;
-    List<String> channelList;
+    final List<String> channelList = new ArrayList<>();
 
-    public ChannelAdapter(ChannelClickListener listener, List<String> channelList) {
+    public ChannelAdapter(ChannelClickListener listener) {
         channelClickListener = listener;
+    }
 
-        if (channelList == null) {
-            this.channelList = new ArrayList<>();
-        } else {
-            this.channelList = channelList;
+    public void setItems(List<String> items) {
+        synchronized (channelList) {
+            channelList.clear();
+            channelList.addAll(items);
         }
+    }
+
+    public List<String> getItems() {
+        return channelList;
     }
 
     @Override

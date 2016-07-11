@@ -9,6 +9,8 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
+import com.pusher.client.PusherOptions;
+import com.pusher.client.util.HttpAuthorizer;
 import com.redgeckotech.pushersample.BuildConfig;
 import com.redgeckotech.pushersample.MyApplication;
 import com.redgeckotech.pushersample.PusherService;
@@ -42,7 +44,9 @@ public class Utilities {
     // Note: Use Dagger for service creation/injection
     public static com.pusher.client.Pusher getPusherInstance() {
         if (pusherInstance == null) {
-            pusherInstance = new com.pusher.client.Pusher(BuildConfig.PUSHER_API_KEY);
+            HttpAuthorizer authorizer = new HttpAuthorizer("https://di.redgringo.com/auth.php");
+            PusherOptions options = new PusherOptions().setAuthorizer(authorizer);
+            pusherInstance = new com.pusher.client.Pusher(BuildConfig.PUSHER_API_KEY, options);
         }
 
         return pusherInstance;

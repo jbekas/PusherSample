@@ -16,7 +16,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.pusher.client.channel.Channel;
+import com.pusher.client.channel.PrivateChannel;
 import com.redgeckotech.pushersample.Constants;
+import com.redgeckotech.pushersample.PusherService;
 import com.redgeckotech.pushersample.R;
 import com.redgeckotech.pushersample.bus.MessageReceived;
 import com.redgeckotech.pushersample.bus.RxBus;
@@ -49,7 +53,9 @@ public class ChannelActivityFragment extends BaseFragment {
 
     private static final int VERTICAL_ITEM_SPACE = 16;
 
+    private PusherService pusherService;
     private String channelName;
+    private Channel channel;
 
     @Bind(R.id.send_image)
     ImageView sendImageView;
@@ -85,6 +91,13 @@ public class ChannelActivityFragment extends BaseFragment {
 
         Timber.d("Channel name: %s", channelName);
 
+        pusherService = Utilities.getPusherService(getActivity());
+        channel = pusherService.getChannel(channelName);
+
+        if (channel == null) {
+            Toast.makeText(getActivity(), getString(R.string.channel_is_not_active, channelName), Toast.LENGTH_SHORT).show();
+            getActivity().finish();
+        }
     }
 
     @Override
@@ -113,6 +126,8 @@ public class ChannelActivityFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
+
+        pusherService = Utilities.getPusherService(getActivity());
 
         // Set the Activity title to the channel name
         setActivityTitle(channelName);
@@ -186,61 +201,71 @@ public class ChannelActivityFragment extends BaseFragment {
         messageData.setUserName(username);
         messageData.setMessage(message);
 
-        Event event = new Event();
-        event.setChannel(channelName);
-        event.setName("my_event");
-        event.setData(messageData);
+        if (channel instanceof PrivateChannel) {
+            String jsonInString = new Gson().toJson(messageData);
+            pusherService.sendMessage(channelName, PusherService.CLIENT_MESSAGE_EVENT, jsonInString);
 
-        PusherApi pusherApi = Utilities.getPusherApiInstance();
-        pusherApi.sendEvent(event);
+            enableMessageUI();
 
-        Call<Void> call = pusherApi.sendEvent(event);
+            messageView.setText(null);
 
-        // Fetch and print a list of the chat messages
-        call.enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                enableMessageUI();
+        } else {
+            Event event = new Event();
+            event.setChannel(channelName);
+            event.setName(PusherService.MY_EVENT);
+            event.setData(messageData);
 
-                if (response.code() != 200) {
-                    String errorMesage = getString(R.string.unknown_error);
-                    ResponseBody responseBody = response.errorBody();
-                    Timber.d("content type: %s", responseBody.contentType());
-                    if (responseBody.contentType().toString().equals("application/json")) {
+            PusherApi pusherApi = Utilities.getPusherApiInstance();
+            pusherApi.sendEvent(event);
 
-                        try {
-                            JSONObject json = new JSONObject(responseBody.string());
+            Call<Void> call = pusherApi.sendEvent(event);
 
-                            errorMesage = json.optString("error", getString(R.string.unknown_error));
-                        } catch (Exception e) {
-                            Timber.e(e, null);
+            // Fetch and print a list of the chat messages
+            call.enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    enableMessageUI();
+
+                    if (response.code() != 200) {
+                        String errorMesage = getString(R.string.unknown_error);
+                        ResponseBody responseBody = response.errorBody();
+                        Timber.d("content type: %s", responseBody.contentType());
+                        if (responseBody.contentType().toString().equals("application/json")) {
+
+                            try {
+                                JSONObject json = new JSONObject(responseBody.string());
+
+                                errorMesage = json.optString("error", getString(R.string.unknown_error));
+                            } catch (Exception e) {
+                                Timber.e(e, null);
+                            }
                         }
+
+                        Timber.e("Error: %s", errorMesage);
+
+                        // TODO These are raw error messages. A real app would make these user friendly.
+                        makeShortToast(errorMesage);
+
+                        return;
                     }
 
-                    Timber.e("Error: %s", errorMesage);
+                    // clear text
+                    messageView.setText(null);
 
-                    // TODO These are raw error messages. A real app would make these user friendly.
-                    makeShortToast(errorMesage);
-
-                    return;
+                    Timber.d("success");
                 }
 
-                // clear text
-                messageView.setText(null);
+                @Override
+                public void onFailure(Call<Void> call, final Throwable t) {
 
-                Timber.d("success");
-            }
+                    enableMessageUI();
 
-            @Override
-            public void onFailure(Call<Void> call, final Throwable t) {
+                    Timber.e(t, "Event was not sent.");
 
-                enableMessageUI();
-
-                Timber.e(t, "Event was not sent.");
-
-                makeShortToast(t.getMessage());
-            }
-        });
+                    makeShortToast(t.getMessage());
+                }
+            });
+        }
     }
 
     @Override

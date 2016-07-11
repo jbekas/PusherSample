@@ -38,7 +38,7 @@ public class MainActivityFragment extends Fragment implements ChannelAdapter.Cha
     @Bind(R.id.channel_list) RecyclerView channelRecyclerView;
 
     private ChannelAdapter channelAdapter;
-    private List<String> channelList;
+    //private List<String> channelList;
 
     private Subscription eventSubscription;
 
@@ -56,9 +56,9 @@ public class MainActivityFragment extends Fragment implements ChannelAdapter.Cha
         channelRecyclerView.setLayoutManager(llm);
 
         PusherService pusherService = Utilities.getPusherService(getActivity());
-        channelList = pusherService.getSubscribedChannelList();
+        //channelList = pusherService.getSubscribedChannelList();
 
-        channelAdapter = new ChannelAdapter(this, channelList);
+        channelAdapter = new ChannelAdapter(this);
 
         channelRecyclerView.setAdapter(channelAdapter);
         channelRecyclerView.addItemDecoration(new VerticalSpaceItemDecoration(VERTICAL_ITEM_SPACE));
@@ -91,6 +91,11 @@ public class MainActivityFragment extends Fragment implements ChannelAdapter.Cha
                         }
                     }
                 });
+
+        PusherService pusherService = Utilities.getPusherService(getActivity());
+        List<String> channelList = pusherService.getSubscribedChannelList();
+        channelAdapter.setItems(channelList);
+        channelAdapter.notifyDataSetChanged();
 
         updateUI();
     }

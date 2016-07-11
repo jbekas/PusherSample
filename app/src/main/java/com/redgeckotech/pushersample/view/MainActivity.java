@@ -1,6 +1,7 @@
 package com.redgeckotech.pushersample.view;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -59,7 +60,9 @@ public class MainActivity extends BaseActivity {
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    makeShortToast(getString(R.string.subscribing_to_channels_not_implemented));
+                    Intent intent = new Intent(MainActivity.this, CreateChannelActivity.class);
+                    startActivity(intent);
+                    //makeShortToast(getString(R.string.subscribing_to_channels_not_implemented));
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
                 }
@@ -147,7 +150,7 @@ public class MainActivity extends BaseActivity {
             edit.commit();
 
             userName.setText(null);
-            
+
             updateUI();
         } else {
             makeShortToast("Please enter your username.");
